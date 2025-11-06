@@ -7,6 +7,9 @@
 > 
 > This SDK was created by the community due to the lack of an official NetApp StorageGRID SDK for Go. It is designed to fulfill the needs of its maintainers and contributors. If you find something missing or spot a bug, please open an [issue](https://github.com/yehlo/storagegrid-sdk-go/issues) or submit a [pull request](https://github.com/yehlo/storagegrid-sdk-go/pulls)! Contributions are highly encouraged.
 
+> [!NOTE]  
+> This SDK was originally developed by an employee and it's history can be seen in the [original repository](https://github.com/yehlo/storagegrid-sdk-go). The original repository is no longer actively maintained, and this copy serves as the new home for ongoing development and contributions from the community.
+
 ## Table of Contents
 
 - [Overview](#overview)
