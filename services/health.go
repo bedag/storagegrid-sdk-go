@@ -3,7 +3,7 @@ package services
 import (
 	"context"
 
-	"github.com/yehlo/storagegrid-sdk-go/models"
+	"github.com/bedag/storagegrid-sdk-go/models"
 )
 
 const (

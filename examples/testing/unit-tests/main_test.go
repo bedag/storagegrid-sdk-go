@@ -5,9 +5,9 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/yehlo/storagegrid-sdk-go/models"
-	"github.com/yehlo/storagegrid-sdk-go/services"
-	sgTesting "github.com/yehlo/storagegrid-sdk-go/testing"
+	"github.com/bedag/storagegrid-sdk-go/models"
+	"github.com/bedag/storagegrid-sdk-go/services"
+	sgTesting "github.com/bedag/storagegrid-sdk-go/testing"
 )
 
 // Example service that depends on StorageGRID SDK

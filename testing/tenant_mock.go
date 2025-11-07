@@ -3,8 +3,8 @@ package testing
 import (
 	"context"
 
-	"github.com/yehlo/storagegrid-sdk-go/models"
-	"github.com/yehlo/storagegrid-sdk-go/services"
+	"github.com/bedag/storagegrid-sdk-go/models"
+	"github.com/bedag/storagegrid-sdk-go/services"
 )
 
 // MockTenantService implements services.TenantServiceInterface for testing

@@ -1,14 +1,14 @@
 # StorageGRID SDK for Go
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/yehlo/storagegrid-sdk-go.svg)](https://pkg.go.dev/github.com/yehlo/storagegrid-sdk-go)
-[![Go Report Card](https://goreportcard.com/badge/github.com/yehlo/storagegrid-sdk-go)](https://goreportcard.com/report/github.com/yehlo/storagegrid-sdk-go)
+[![Go Reference](https://pkg.go.dev/badge/github.com/bedag/storagegrid-sdk-go.svg)](https://pkg.go.dev/github.com/bedag/storagegrid-sdk-go)
+[![Go Report Card](https://goreportcard.com/badge/github.com/bedag/storagegrid-sdk-go)](https://goreportcard.com/report/github.com/bedag/storagegrid-sdk-go)
 
 > **⚠️ Community-Maintained SDK**
 > 
-> This SDK was created by the community due to the lack of an official NetApp StorageGRID SDK for Go. It is designed to fulfill the needs of its maintainers and contributors. If you find something missing or spot a bug, please open an [issue](https://github.com/yehlo/storagegrid-sdk-go/issues) or submit a [pull request](https://github.com/yehlo/storagegrid-sdk-go/pulls)! Contributions are highly encouraged.
+> This SDK was created by the community due to the lack of an official NetApp StorageGRID SDK for Go. It is designed to fulfill the needs of its maintainers and contributors. If you find something missing or spot a bug, please open an [issue](https://github.com/bedag/storagegrid-sdk-go/issues) or submit a [pull request](https://github.com/bedag/storagegrid-sdk-go/pulls)! Contributions are highly encouraged.
 
 > [!NOTE]  
-> This SDK was originally developed by an employee and it's history can be seen in the [original repository](https://github.com/yehlo/storagegrid-sdk-go). The original repository is no longer actively maintained, and this copy serves as the new home for ongoing development and contributions from the community.
+> This SDK was originally developed by an employee and it's history can be seen in the [original repository](https://github.com/bedag/storagegrid-sdk-go). The original repository is no longer actively maintained, and this copy serves as the new home for ongoing development and contributions from the community.
 
 ## Table of Contents
 
@@ -64,7 +64,7 @@ This SDK reflects this architecture with corresponding client types. For more de
 ## Installation
 
 ```sh
-go get github.com/yehlo/storagegrid-sdk-go
+go get github.com/bedag/storagegrid-sdk-go
 ```
 
 ## Quick Start
@@ -77,8 +77,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/yehlo/storagegrid-sdk-go/client"
-	"github.com/yehlo/storagegrid-sdk-go/models"
+	"github.com/bedag/storagegrid-sdk-go/client"
+	"github.com/bedag/storagegrid-sdk-go/models"
 )
 
 func main() {
@@ -119,8 +119,8 @@ Both client types support the same configuration options:
 
 ```go
 import (
-	"github.com/yehlo/storagegrid-sdk-go/client"
-	"github.com/yehlo/storagegrid-sdk-go/models"
+	"github.com/bedag/storagegrid-sdk-go/client"
+	"github.com/bedag/storagegrid-sdk-go/models"
 )
 
 // Common configuration options
@@ -341,8 +341,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/yehlo/storagegrid-sdk-go/models"
-	"github.com/yehlo/storagegrid-sdk-go/testing"
+	"github.com/bedag/storagegrid-sdk-go/models"
+	"github.com/bedag/storagegrid-sdk-go/testing"
 )
 
 func TestTenantOperations(t *testing.T) {
@@ -495,8 +495,8 @@ storagegrid-sdk-go/
 
 We welcome contributions! Here's how you can help:
 
-1. **Report Issues**: Found a bug or missing feature? [Open an issue](https://github.com/yehlo/storagegrid-sdk-go/issues)
-2. **Submit Pull Requests**: Have a fix or new feature? [Submit a PR](https://github.com/yehlo/storagegrid-sdk-go/pulls)
+1. **Report Issues**: Found a bug or missing feature? [Open an issue](https://github.com/bedag/storagegrid-sdk-go/issues)
+2. **Submit Pull Requests**: Have a fix or new feature? [Submit a PR](https://github.com/bedag/storagegrid-sdk-go/pulls)
 3. **Improve Documentation**: Help make this README and code comments better
 4. **Add Tests**: Increase test coverage for reliability
 

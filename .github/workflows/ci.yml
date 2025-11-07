@@ -114,7 +114,7 @@ jobs:
         go list ./...
         
         echo "Testing that mock packages work correctly..."
-        go run -c 'import _ "github.com/yehlo/storagegrid-sdk-go/testing"' 2>/dev/null || echo "Mock import test passed"
+        go run -c 'import _ "github.com/bedag/storagegrid-sdk-go/testing"' 2>/dev/null || echo "Mock import test passed"
     
     - name: Verify interface compliance
       run: |

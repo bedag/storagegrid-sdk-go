@@ -14,7 +14,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/yehlo/storagegrid-sdk-go/models"
+	"github.com/bedag/storagegrid-sdk-go/models"
 )
 
 var (

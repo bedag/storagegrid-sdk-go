@@ -3,7 +3,7 @@ package client
 import (
 	"net/url"
 
-	"github.com/yehlo/storagegrid-sdk-go/services"
+	"github.com/bedag/storagegrid-sdk-go/services"
 )
 
 const (

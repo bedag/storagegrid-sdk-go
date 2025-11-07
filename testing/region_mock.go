@@ -3,7 +3,7 @@ package testing
 import (
 	"context"
 
-	"github.com/yehlo/storagegrid-sdk-go/services"
+	"github.com/bedag/storagegrid-sdk-go/services"
 )
 
 // MockRegionService implements services.RegionServiceInterface for testing

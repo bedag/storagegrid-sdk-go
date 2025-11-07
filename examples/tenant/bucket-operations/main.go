@@ -7,8 +7,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/yehlo/storagegrid-sdk-go/client"
-	"github.com/yehlo/storagegrid-sdk-go/models"
+	"github.com/bedag/storagegrid-sdk-go/client"
+	"github.com/bedag/storagegrid-sdk-go/models"
 )
 
 func main() {
