@@ -20,6 +20,7 @@ type BucketServiceInterface interface {
 	GetUsage(ctx context.Context, name string) (*models.BucketStats, error)
 	Delete(ctx context.Context, name string) error
 	Drain(ctx context.Context, name string) (*models.BucketDeleteObjectStatus, error)
+	CancelDrain(ctx context.Context, name string) (*models.BucketDeleteObjectStatus, error)
 	DrainStatus(ctx context.Context, name string) (*models.BucketDeleteObjectStatus, error)
 }
 
