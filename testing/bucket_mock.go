@@ -15,6 +15,7 @@ type MockBucketService struct {
 	GetUsageFunc    func(ctx context.Context, name string) (*models.BucketStats, error)
 	DeleteFunc      func(ctx context.Context, name string) error
 	DrainFunc       func(ctx context.Context, name string) (*models.BucketDeleteObjectStatus, error)
+	CancelDrainFunc func(ctx context.Context, name string) (*models.BucketDeleteObjectStatus, error)
 	DrainStatusFunc func(ctx context.Context, name string) (*models.BucketDeleteObjectStatus, error)
 }
 
@@ -57,6 +58,13 @@ func (m *MockBucketService) Delete(ctx context.Context, name string) error {
 func (m *MockBucketService) Drain(ctx context.Context, name string) (*models.BucketDeleteObjectStatus, error) {
 	if m.DrainFunc != nil {
 		return m.DrainFunc(ctx, name)
+	}
+	return &models.BucketDeleteObjectStatus{}, nil
+}
+
+func (m *MockBucketService) CancelDrain(ctx context.Context, name string) (*models.BucketDeleteObjectStatus, error) {
+	if m.DrainFunc != nil {
+		return m.CancelDrainFunc(ctx, name)
 	}
 	return &models.BucketDeleteObjectStatus{}, nil
 }
