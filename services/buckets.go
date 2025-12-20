@@ -117,6 +117,22 @@ func (s *BucketService) Drain(ctx context.Context, name string) (*models.BucketD
 	return deleteObjectStatus, nil
 }
 
+// Drain a bucket by name. This will delete all objects in the bucket but leave the bucket itself intact.
+func (s *BucketService) CancelDrain(ctx context.Context, name string) (*models.BucketDeleteObjectStatus, error) {
+	response := models.Response{}
+	response.Data = &models.BucketDeleteObjectStatus{}
+	body := map[string]string{"deleteObjects": "false"}
+
+	err := s.client.DoParsed(ctx, "POST", bucketEndpoint+"/"+name+"/delete-objects", body, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	deleteObjectStatus := response.Data.(*models.BucketDeleteObjectStatus)
+
+	return deleteObjectStatus, nil
+}
+
 func (s *BucketService) DrainStatus(ctx context.Context, name string) (*models.BucketDeleteObjectStatus, error) {
 	response := models.Response{}
 	response.Data = &models.BucketDeleteObjectStatus{}
