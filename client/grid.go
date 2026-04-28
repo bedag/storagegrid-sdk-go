@@ -14,11 +14,12 @@ type GridClient struct {
 	client *Client
 
 	// Services
-	tenant  services.TenantServiceInterface
-	health  services.HealthServiceInterface
-	region  services.RegionServiceInterface
-	haGroup services.HAGroupServiceInterface
-	gateway services.GatewayConfigServiceInterface
+	tenant       services.TenantServiceInterface
+	health       services.HealthServiceInterface
+	region       services.RegionServiceInterface
+	haGroup      services.HAGroupServiceInterface
+	gateway      services.GatewayConfigServiceInterface
+	s3ObjectLock services.S3ObjectLockServiceInterface
 }
 
 func NewGridClient(options ...ClientOption) (*GridClient, error) {
@@ -30,12 +31,13 @@ func NewGridClient(options ...ClientOption) (*GridClient, error) {
 	c.baseURL = c.baseURL.ResolveReference(&url.URL{Path: gridAPI})
 
 	return &GridClient{
-		client:  c,
-		tenant:  services.NewTenantService(c),
-		health:  services.NewHealthService(c),
-		region:  services.NewRegionGridService(c),
-		haGroup: services.NewHAGroupService(c),
-		gateway: services.NewGatewayConfigService(c),
+		client:       c,
+		tenant:       services.NewTenantService(c),
+		health:       services.NewHealthService(c),
+		region:       services.NewRegionGridService(c),
+		haGroup:      services.NewHAGroupService(c),
+		gateway:      services.NewGatewayConfigService(c),
+		s3ObjectLock: services.NewS3ObjectLockService(c),
 	}, nil
 }
 
@@ -59,4 +61,8 @@ func (gc *GridClient) HAGroup() services.HAGroupServiceInterface {
 
 func (gc *GridClient) Gateway() services.GatewayConfigServiceInterface {
 	return gc.gateway
+}
+
+func (gc *GridClient) S3ObjectLock() services.S3ObjectLockServiceInterface {
+	return gc.s3ObjectLock
 }

@@ -38,4 +38,10 @@ type TenantPolicy struct {
 	AllowedGridFederationConnections []string `json:"allowedGridFederationConnections,omitempty"`
 	// the maximum number of bytes available for this tenant's objects. Represents a logical amount (object size), not a physical amount (size on disk). If null, an unlimited number of bytes is available.
 	QuotaObjectBytes *int64 `json:"quotaObjectBytes,omitempty"`
+	// whether a tenant can use S3 Object Lock in compliance mode. Requires that S3 Object Lock is enabled grid-wide (see /grid/compliance-global).
+	AllowComplianceMode *bool `json:"allowComplianceMode,omitempty"`
+	// the maximum retention period, in days, that a tenant can apply to objects using S3 Object Lock. If null, no per-tenant maximum is enforced.
+	MaxRetentionDays *int `json:"maxRetentionDays,omitempty"`
+	// the maximum retention period, in years, that a tenant can apply to objects using S3 Object Lock. If null, no per-tenant maximum is enforced.
+	MaxRetentionYears *int `json:"maxRetentionYears,omitempty"`
 }
