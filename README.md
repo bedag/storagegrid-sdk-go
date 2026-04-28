@@ -7,9 +7,6 @@
 > 
 > This SDK was created by the community due to the lack of an official NetApp StorageGRID SDK for Go. It is designed to fulfill the needs of its maintainers and contributors. If you find something missing or spot a bug, please open an [issue](https://github.com/bedag/storagegrid-sdk-go/issues) or submit a [pull request](https://github.com/bedag/storagegrid-sdk-go/pulls)! Contributions are highly encouraged.
 
-> [!NOTE]  
-> This SDK was originally developed by an employee and it's history can be seen in the [original repository](https://github.com/bedag/storagegrid-sdk-go). The original repository is no longer actively maintained, and this copy serves as the new home for ongoing development and contributions from the community.
-
 ## Table of Contents
 
 - [Overview](#overview)
@@ -43,9 +40,10 @@ This SDK reflects this architecture with corresponding client types. For more de
 - **Regions**: List available regions for grid and tenant contexts
 - **HA Groups**: Manage High Availability groups
 - **Gateway Configs**: Configure load balancer endpoints
+- **S3 Object Lock**: Read and update grid-wide compliance (S3 Object Lock) settings
 
 ### Tenant Management
-- **Buckets**: Create, list, delete, drain buckets; monitor bucket usage and compliance settings
+- **Buckets**: Create, list, delete, drain buckets; manage per-bucket sub-resources (region, usage, S3 Object Lock, notifications, policy, CORS, legacy compliance)
 - **Users**: Manage tenant users with password management
 - **Groups**: Manage tenant groups with policies and permissions
 - **S3 Access Keys**: Generate and manage S3 access keys for users
@@ -291,8 +289,8 @@ fmt.Printf("Secret Key: %s\n", *keys.SecretAccessKey)
 
 Comprehensive examples are available in the [`examples/`](examples/) directory:
 
-- **[Grid Management](examples/grid/)**: Health monitoring, tenant management
-- **[Tenant Operations](examples/tenant/)**: Bucket operations, user management
+- **[Grid Management](examples/grid/)**: Health monitoring, tenant management, end-to-end S3 Object Lock
+- **[Tenant Operations](examples/tenant/)**: Bucket operations (incl. per-bucket sub-resources)
 - **[Testing](examples/testing/)**: Unit tests with mocks, integration tests
 
 ### Quick Examples
@@ -434,6 +432,7 @@ The `testing` package provides mocks for all service interfaces:
 - `MockHAGroupService` - HA group management
 - `MockGatewayConfigService` - Gateway configuration
 - `MockRegionService` - Region management
+- `MockS3ObjectLockService` - Grid-wide S3 Object Lock (compliance-global) settings
 
 ## API Coverage
 
@@ -442,25 +441,27 @@ This SDK provides access to StorageGRID's dual API architecture:
 ### Grid Management APIs (GridClient)
 Used for system-wide administration with grid administrator credentials:
 
-| Service | Endpoint | Operations | Description |
-|---------|----------|------------|-------------|
-| **Tenants** | `/grid/accounts` | Create, Read, Update, Delete, List | Manage tenant accounts |
-| **Health** | `/grid/health` | Read | Monitor grid health, alarms, alerts, node status |
-| **Regions** | `/grid/regions` | List | Manage grid-wide regions |
-| **HA Groups** | `/private/ha-groups` | Create, Read, Update, Delete, List | Configure High Availability groups |
-| **Gateways** | `/private/gateway-configs` | Create, Read, Update, Delete, List | Manage load balancer endpoints |
+| Service            | Endpoint                   | Operations                         | Description                                           |
+| ------------------ | -------------------------- | ---------------------------------- | ----------------------------------------------------- |
+| **Tenants**        | `/grid/accounts`           | Create, Read, Update, Delete, List | Manage tenant accounts                                |
+| **Health**         | `/grid/health`             | Read                               | Monitor grid health, alarms, alerts, node status      |
+| **Regions**        | `/grid/regions`            | List                               | Manage grid-wide regions                              |
+| **HA Groups**      | `/private/ha-groups`       | Create, Read, Update, Delete, List | Configure High Availability groups                    |
+| **Gateways**       | `/private/gateway-configs` | Create, Read, Update, Delete, List | Manage load balancer endpoints                        |
+| **S3 Object Lock** | `/grid/compliance-global`  | Read, Update                       | Manage grid-wide S3 Object Lock (compliance) settings |
 
 ### Tenant Management APIs (TenantClient)
 Used for tenant-specific operations with tenant user credentials:
 
-| Service | Endpoint | Operations | Description |
-|---------|----------|------------|-------------|
-| **Buckets** | `/org/containers` | Create, Read, Delete, List, Drain | Manage S3 buckets within tenant |
-| **Users** | `/org/users` | Create, Read, Update, Delete, List | Manage tenant users |
-| **Groups** | `/org/groups` | Create, Read, Update, Delete, List | Manage tenant groups and permissions |
-| **S3 Keys** | `/org/users/*/s3-access-keys` | Create, Read, Delete, List | Generate and manage S3 access credentials |
-| **Regions** | `/org/regions` | List | List tenant-accessible regions |
-| **Usage** | `/org/usage` | Read | Monitor tenant usage statistics |
+| Service                  | Endpoint                                                                                | Operations                         | Description                                                                                                    |
+| ------------------------ | --------------------------------------------------------------------------------------- | ---------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| **Buckets**              | `/org/containers`                                                                       | Create, Read, Delete, List, Drain  | Manage S3 buckets within tenant                                                                                |
+| **Bucket sub-resources** | `/org/containers/{name}/{region,usage,object-lock,notification,policy,cors,compliance}` | Read, Update                       | Per-bucket configuration: region, usage, S3 Object Lock, notifications, bucket policy, CORS, legacy compliance |
+| **Users**                | `/org/users`                                                                            | Create, Read, Update, Delete, List | Manage tenant users                                                                                            |
+| **Groups**               | `/org/groups`                                                                           | Create, Read, Update, Delete, List | Manage tenant groups and permissions                                                                           |
+| **S3 Keys**              | `/org/users/*/s3-access-keys`                                                           | Create, Read, Delete, List         | Generate and manage S3 access credentials                                                                      |
+| **Regions**              | `/org/regions`                                                                          | List                               | List tenant-accessible regions                                                                                 |
+| **Usage**                | `/org/usage`                                                                            | Read                               | Monitor tenant usage statistics                                                                                |
 
 > 📚 **Official Documentation**: For comprehensive API documentation, refer to the [NetApp StorageGRID REST API Reference](https://docs.netapp.com/us-en/storagegrid-115/s3/storagegrid-s3-rest-api-operations.html).
 
