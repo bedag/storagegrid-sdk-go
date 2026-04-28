@@ -188,26 +188,24 @@ func monitorBucketUsage(ctx context.Context, client *client.TenantClient) error 
 	for _, bucket := range *buckets {
 		fmt.Printf("\n  📈 Usage for %s:\n", bucket.Name)
 
-		usage, err := client.Bucket().GetUsage(ctx, bucket.Name)
+		usage, err := client.Bucket().GetBucketUsage(ctx, bucket.Name)
 		if err != nil {
 			fmt.Printf("    ❌ Failed to get usage: %v\n", err)
 			continue
 		}
 
 		if usage.ObjectCount != nil {
-			fmt.Printf("    Objects: %s\n", formatNumber(int64(*usage.ObjectCount)))
+			fmt.Printf("    Objects: %s\n", formatNumber(*usage.ObjectCount))
 		}
 		if usage.DataBytes != nil {
 			fmt.Printf("    Data: %s\n", formatBytes(*usage.DataBytes))
 		}
-		if usage.Region != nil {
-			fmt.Printf("    Region: %s\n", *usage.Region)
-		}
-		if usage.VersioningEnabled != nil {
-			fmt.Printf("    Versioning: %v\n", *usage.VersioningEnabled)
-		}
-		if usage.Encryption != nil {
-			fmt.Printf("    Encryption: %s\n", *usage.Encryption)
+
+		region, err := client.Bucket().GetRegion(ctx, bucket.Name)
+		if err != nil {
+			fmt.Printf("    ❌ Failed to get region: %v\n", err)
+		} else if region != "" {
+			fmt.Printf("    Region: %s\n", region)
 		}
 	}
 

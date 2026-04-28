@@ -17,11 +17,34 @@ type BucketServiceInterface interface {
 	List(ctx context.Context) (*[]models.Bucket, error)
 	GetByName(ctx context.Context, name string) (*models.Bucket, error)
 	Create(ctx context.Context, bucket *models.Bucket) (*models.Bucket, error)
+	// Deprecated: GetUsage retrieves the full tenant usage and filters by bucket
+	// name. Use GetBucketUsage instead, which targets the per-bucket usage
+	// endpoint (/org/containers/{name}/usage).
 	GetUsage(ctx context.Context, name string) (*models.BucketStats, error)
 	Delete(ctx context.Context, name string) error
 	Drain(ctx context.Context, name string) (*models.BucketDeleteObjectStatus, error)
 	CancelDrain(ctx context.Context, name string) (*models.BucketDeleteObjectStatus, error)
 	DrainStatus(ctx context.Context, name string) (*models.BucketDeleteObjectStatus, error)
+
+	// Per-bucket sub-resources
+
+	GetBucketUsage(ctx context.Context, name string) (*models.BucketUsage, error)
+	GetRegion(ctx context.Context, name string) (string, error)
+
+	GetObjectLock(ctx context.Context, name string) (*models.BucketS3ObjectLockSettings, error)
+	UpdateObjectLock(ctx context.Context, name string, settings *models.BucketS3ObjectLockSettings) (*models.BucketS3ObjectLockSettings, error)
+
+	GetNotification(ctx context.Context, name string) (*models.BucketNotificationConfiguration, error)
+	UpdateNotification(ctx context.Context, name string, config *models.BucketNotificationConfiguration) (*models.BucketNotificationConfiguration, error)
+
+	GetPolicy(ctx context.Context, name string) (*models.BucketPolicyConfiguration, error)
+	UpdatePolicy(ctx context.Context, name string, policy *models.BucketPolicyConfiguration) (*models.BucketPolicyConfiguration, error)
+
+	GetCors(ctx context.Context, name string) (*models.BucketCorsConfiguration, error)
+	UpdateCors(ctx context.Context, name string, config *models.BucketCorsConfiguration) (*models.BucketCorsConfiguration, error)
+
+	GetCompliance(ctx context.Context, name string) (*models.BucketComplianceSettings, error)
+	UpdateCompliance(ctx context.Context, name string, settings *models.BucketComplianceSettings) (*models.BucketComplianceSettings, error)
 }
 
 type BucketService struct {
@@ -74,6 +97,9 @@ func (s *BucketService) Create(ctx context.Context, bucket *models.Bucket) (*mod
 	return bucket, nil
 }
 
+// Deprecated: prefer GetBucketUsage which targets the per-bucket usage endpoint
+// (/org/containers/{name}/usage) instead of fetching and filtering the full
+// tenant usage payload.
 func (s *BucketService) GetUsage(ctx context.Context, name string) (*models.BucketStats, error) {
 	response := models.Response{}
 	response.Data = &models.TenantUsage{}
@@ -146,4 +172,133 @@ func (s *BucketService) DrainStatus(ctx context.Context, name string) (*models.B
 	deleteObjectStatus := response.Data.(*models.BucketDeleteObjectStatus)
 
 	return deleteObjectStatus, nil
+}
+
+// bucketSubresource builds the URL path for a per-bucket sub-resource endpoint.
+func bucketSubresource(name, subresource string) string {
+	return bucketEndpoint + "/" + name + "/" + subresource
+}
+
+// GetBucketUsage retrieves the per-bucket usage metrics from
+// GET /org/containers/{name}/usage.
+func (s *BucketService) GetBucketUsage(ctx context.Context, name string) (*models.BucketUsage, error) {
+	response := models.Response{}
+	response.Data = &models.BucketUsage{}
+	if err := s.client.DoParsed(ctx, "GET", bucketSubresource(name, "usage"), nil, &response); err != nil {
+		return nil, err
+	}
+	return response.Data.(*models.BucketUsage), nil
+}
+
+// GetRegion retrieves the region for a bucket from GET /org/containers/{name}/region.
+func (s *BucketService) GetRegion(ctx context.Context, name string) (string, error) {
+	response := models.Response{}
+	data := struct {
+		Region string `json:"region"`
+	}{}
+	response.Data = &data
+	if err := s.client.DoParsed(ctx, "GET", bucketSubresource(name, "region"), nil, &response); err != nil {
+		return "", err
+	}
+	return data.Region, nil
+}
+
+// GetObjectLock retrieves the S3 Object Lock settings for a bucket.
+func (s *BucketService) GetObjectLock(ctx context.Context, name string) (*models.BucketS3ObjectLockSettings, error) {
+	response := models.Response{}
+	response.Data = &models.BucketS3ObjectLockSettings{}
+	if err := s.client.DoParsed(ctx, "GET", bucketSubresource(name, "object-lock"), nil, &response); err != nil {
+		return nil, err
+	}
+	return response.Data.(*models.BucketS3ObjectLockSettings), nil
+}
+
+// UpdateObjectLock updates the S3 Object Lock settings for a bucket.
+func (s *BucketService) UpdateObjectLock(ctx context.Context, name string, settings *models.BucketS3ObjectLockSettings) (*models.BucketS3ObjectLockSettings, error) {
+	response := models.Response{}
+	response.Data = &models.BucketS3ObjectLockSettings{}
+	if err := s.client.DoParsed(ctx, "PUT", bucketSubresource(name, "object-lock"), settings, &response); err != nil {
+		return nil, err
+	}
+	return response.Data.(*models.BucketS3ObjectLockSettings), nil
+}
+
+// GetNotification retrieves the notification configuration for a bucket.
+func (s *BucketService) GetNotification(ctx context.Context, name string) (*models.BucketNotificationConfiguration, error) {
+	response := models.Response{}
+	response.Data = &models.BucketNotificationConfiguration{}
+	if err := s.client.DoParsed(ctx, "GET", bucketSubresource(name, "notification"), nil, &response); err != nil {
+		return nil, err
+	}
+	return response.Data.(*models.BucketNotificationConfiguration), nil
+}
+
+// UpdateNotification updates the notification configuration for a bucket.
+func (s *BucketService) UpdateNotification(ctx context.Context, name string, config *models.BucketNotificationConfiguration) (*models.BucketNotificationConfiguration, error) {
+	response := models.Response{}
+	response.Data = &models.BucketNotificationConfiguration{}
+	if err := s.client.DoParsed(ctx, "PUT", bucketSubresource(name, "notification"), config, &response); err != nil {
+		return nil, err
+	}
+	return response.Data.(*models.BucketNotificationConfiguration), nil
+}
+
+// GetPolicy retrieves the bucket policy.
+func (s *BucketService) GetPolicy(ctx context.Context, name string) (*models.BucketPolicyConfiguration, error) {
+	response := models.Response{}
+	response.Data = &models.BucketPolicyConfiguration{}
+	if err := s.client.DoParsed(ctx, "GET", bucketSubresource(name, "policy"), nil, &response); err != nil {
+		return nil, err
+	}
+	return response.Data.(*models.BucketPolicyConfiguration), nil
+}
+
+// UpdatePolicy updates the bucket policy.
+func (s *BucketService) UpdatePolicy(ctx context.Context, name string, policy *models.BucketPolicyConfiguration) (*models.BucketPolicyConfiguration, error) {
+	response := models.Response{}
+	response.Data = &models.BucketPolicyConfiguration{}
+	if err := s.client.DoParsed(ctx, "PUT", bucketSubresource(name, "policy"), policy, &response); err != nil {
+		return nil, err
+	}
+	return response.Data.(*models.BucketPolicyConfiguration), nil
+}
+
+// GetCors retrieves the CORS configuration for a bucket.
+func (s *BucketService) GetCors(ctx context.Context, name string) (*models.BucketCorsConfiguration, error) {
+	response := models.Response{}
+	response.Data = &models.BucketCorsConfiguration{}
+	if err := s.client.DoParsed(ctx, "GET", bucketSubresource(name, "cors"), nil, &response); err != nil {
+		return nil, err
+	}
+	return response.Data.(*models.BucketCorsConfiguration), nil
+}
+
+// UpdateCors updates the CORS configuration for a bucket.
+func (s *BucketService) UpdateCors(ctx context.Context, name string, config *models.BucketCorsConfiguration) (*models.BucketCorsConfiguration, error) {
+	response := models.Response{}
+	response.Data = &models.BucketCorsConfiguration{}
+	if err := s.client.DoParsed(ctx, "PUT", bucketSubresource(name, "cors"), config, &response); err != nil {
+		return nil, err
+	}
+	return response.Data.(*models.BucketCorsConfiguration), nil
+}
+
+// GetCompliance retrieves the legacy Compliance settings for a bucket.
+func (s *BucketService) GetCompliance(ctx context.Context, name string) (*models.BucketComplianceSettings, error) {
+	response := models.Response{}
+	response.Data = &models.BucketComplianceSettings{}
+	if err := s.client.DoParsed(ctx, "GET", bucketSubresource(name, "compliance"), nil, &response); err != nil {
+		return nil, err
+	}
+	return response.Data.(*models.BucketComplianceSettings), nil
+}
+
+// UpdateCompliance updates the legacy Compliance settings for a bucket.
+func (s *BucketService) UpdateCompliance(ctx context.Context, name string, settings *models.BucketComplianceSettings) (*models.BucketComplianceSettings, error) {
+	response := models.Response{}
+	response.Data = &models.BucketComplianceSettings{}
+	if err := s.client.DoParsed(ctx, "PUT", bucketSubresource(name, "compliance"), settings, &response); err != nil {
+		return nil, err
+	}
+	return response.Data.(*models.BucketComplianceSettings), nil
 }

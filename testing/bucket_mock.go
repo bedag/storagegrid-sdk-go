@@ -17,6 +17,19 @@ type MockBucketService struct {
 	DrainFunc       func(ctx context.Context, name string) (*models.BucketDeleteObjectStatus, error)
 	CancelDrainFunc func(ctx context.Context, name string) (*models.BucketDeleteObjectStatus, error)
 	DrainStatusFunc func(ctx context.Context, name string) (*models.BucketDeleteObjectStatus, error)
+
+	GetBucketUsageFunc     func(ctx context.Context, name string) (*models.BucketUsage, error)
+	GetRegionFunc          func(ctx context.Context, name string) (string, error)
+	GetObjectLockFunc      func(ctx context.Context, name string) (*models.BucketS3ObjectLockSettings, error)
+	UpdateObjectLockFunc   func(ctx context.Context, name string, settings *models.BucketS3ObjectLockSettings) (*models.BucketS3ObjectLockSettings, error)
+	GetNotificationFunc    func(ctx context.Context, name string) (*models.BucketNotificationConfiguration, error)
+	UpdateNotificationFunc func(ctx context.Context, name string, config *models.BucketNotificationConfiguration) (*models.BucketNotificationConfiguration, error)
+	GetPolicyFunc          func(ctx context.Context, name string) (*models.BucketPolicyConfiguration, error)
+	UpdatePolicyFunc       func(ctx context.Context, name string, policy *models.BucketPolicyConfiguration) (*models.BucketPolicyConfiguration, error)
+	GetCorsFunc            func(ctx context.Context, name string) (*models.BucketCorsConfiguration, error)
+	UpdateCorsFunc         func(ctx context.Context, name string, config *models.BucketCorsConfiguration) (*models.BucketCorsConfiguration, error)
+	GetComplianceFunc      func(ctx context.Context, name string) (*models.BucketComplianceSettings, error)
+	UpdateComplianceFunc   func(ctx context.Context, name string, settings *models.BucketComplianceSettings) (*models.BucketComplianceSettings, error)
 }
 
 func (m *MockBucketService) List(ctx context.Context) (*[]models.Bucket, error) {
@@ -74,6 +87,90 @@ func (m *MockBucketService) DrainStatus(ctx context.Context, name string) (*mode
 		return m.DrainStatusFunc(ctx, name)
 	}
 	return &models.BucketDeleteObjectStatus{}, nil
+}
+
+func (m *MockBucketService) GetBucketUsage(ctx context.Context, name string) (*models.BucketUsage, error) {
+	if m.GetBucketUsageFunc != nil {
+		return m.GetBucketUsageFunc(ctx, name)
+	}
+	return &models.BucketUsage{}, nil
+}
+
+func (m *MockBucketService) GetRegion(ctx context.Context, name string) (string, error) {
+	if m.GetRegionFunc != nil {
+		return m.GetRegionFunc(ctx, name)
+	}
+	return "", nil
+}
+
+func (m *MockBucketService) GetObjectLock(ctx context.Context, name string) (*models.BucketS3ObjectLockSettings, error) {
+	if m.GetObjectLockFunc != nil {
+		return m.GetObjectLockFunc(ctx, name)
+	}
+	return &models.BucketS3ObjectLockSettings{}, nil
+}
+
+func (m *MockBucketService) UpdateObjectLock(ctx context.Context, name string, settings *models.BucketS3ObjectLockSettings) (*models.BucketS3ObjectLockSettings, error) {
+	if m.UpdateObjectLockFunc != nil {
+		return m.UpdateObjectLockFunc(ctx, name, settings)
+	}
+	return settings, nil
+}
+
+func (m *MockBucketService) GetNotification(ctx context.Context, name string) (*models.BucketNotificationConfiguration, error) {
+	if m.GetNotificationFunc != nil {
+		return m.GetNotificationFunc(ctx, name)
+	}
+	return &models.BucketNotificationConfiguration{}, nil
+}
+
+func (m *MockBucketService) UpdateNotification(ctx context.Context, name string, config *models.BucketNotificationConfiguration) (*models.BucketNotificationConfiguration, error) {
+	if m.UpdateNotificationFunc != nil {
+		return m.UpdateNotificationFunc(ctx, name, config)
+	}
+	return config, nil
+}
+
+func (m *MockBucketService) GetPolicy(ctx context.Context, name string) (*models.BucketPolicyConfiguration, error) {
+	if m.GetPolicyFunc != nil {
+		return m.GetPolicyFunc(ctx, name)
+	}
+	return &models.BucketPolicyConfiguration{}, nil
+}
+
+func (m *MockBucketService) UpdatePolicy(ctx context.Context, name string, policy *models.BucketPolicyConfiguration) (*models.BucketPolicyConfiguration, error) {
+	if m.UpdatePolicyFunc != nil {
+		return m.UpdatePolicyFunc(ctx, name, policy)
+	}
+	return policy, nil
+}
+
+func (m *MockBucketService) GetCors(ctx context.Context, name string) (*models.BucketCorsConfiguration, error) {
+	if m.GetCorsFunc != nil {
+		return m.GetCorsFunc(ctx, name)
+	}
+	return &models.BucketCorsConfiguration{}, nil
+}
+
+func (m *MockBucketService) UpdateCors(ctx context.Context, name string, config *models.BucketCorsConfiguration) (*models.BucketCorsConfiguration, error) {
+	if m.UpdateCorsFunc != nil {
+		return m.UpdateCorsFunc(ctx, name, config)
+	}
+	return config, nil
+}
+
+func (m *MockBucketService) GetCompliance(ctx context.Context, name string) (*models.BucketComplianceSettings, error) {
+	if m.GetComplianceFunc != nil {
+		return m.GetComplianceFunc(ctx, name)
+	}
+	return &models.BucketComplianceSettings{}, nil
+}
+
+func (m *MockBucketService) UpdateCompliance(ctx context.Context, name string, settings *models.BucketComplianceSettings) (*models.BucketComplianceSettings, error) {
+	if m.UpdateComplianceFunc != nil {
+		return m.UpdateComplianceFunc(ctx, name, settings)
+	}
+	return settings, nil
 }
 
 // Compile-time interface compliance check
