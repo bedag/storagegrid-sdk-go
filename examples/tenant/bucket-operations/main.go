@@ -152,7 +152,7 @@ func createExampleBuckets(ctx context.Context, client *client.TenantClient) erro
 				Enabled: &config.objectLock,
 				DefaultRetentionSetting: &models.BucketS3ObjectLockDefaultRetentionSettings{
 					Mode:  "COMPLIANCE",
-					Years: 1,
+					Years: "1",
 				},
 			}
 		}

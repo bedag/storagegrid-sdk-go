@@ -1,6 +1,9 @@
 package models
 
-import "time"
+import (
+	"encoding/json"
+	"time"
+)
 
 type Bucket struct {
 	// if true, object versioning will be enabled for the bucket.
@@ -30,9 +33,16 @@ type BucketS3ObjectLockDefaultRetentionSettings struct {
 	// The retention mode used for new objects added to this bucket. Must be compliance, which means that an object version cannot be overwritten or deleted by any user.
 	Mode string `json:"mode"`
 	// The length of the default retention period for new objects added to this bucket, in days. If provided, must be paired with retentionMode. Does not affect existing bucket objects or objects with their own retain-until-date settings.
-	Days int32 `json:"days,omitempty"`
+	//
+	// Typed as json.Number because the StorageGRID API returns this value
+	// as a JSON string (e.g. "30") even though it accepts an integer on
+	// write. json.Number tolerates both encodings on read and marshals
+	// back as a bare numeric literal on write.
+	Days json.Number `json:"days,omitempty"`
 	// The length of the default retention period for new objects added to this bucket, in years. If provided, must be paired with retentionMode. Does not affect existing bucket objects or objects with their own retain-until-date settings.
-	Years int32 `json:"years,omitempty"`
+	//
+	// See Days for why this is typed as json.Number.
+	Years json.Number `json:"years,omitempty"`
 }
 
 type BucketComplianceSettings struct {
