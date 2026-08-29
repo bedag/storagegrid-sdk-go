@@ -34,6 +34,9 @@ type BucketServiceInterface interface {
 	GetObjectLock(ctx context.Context, name string) (*models.BucketS3ObjectLockSettings, error)
 	UpdateObjectLock(ctx context.Context, name string, settings *models.BucketS3ObjectLockSettings) (*models.BucketS3ObjectLockSettings, error)
 
+	GetConsistency(ctx context.Context, name string) (*models.BucketConsistencySetting, error)
+	UpdateConsistency(ctx context.Context, name string, settings *models.BucketConsistencySetting) (*models.BucketConsistencySetting, error)
+
 	GetNotification(ctx context.Context, name string) (*models.BucketNotificationConfiguration, error)
 	UpdateNotification(ctx context.Context, name string, config *models.BucketNotificationConfiguration) (*models.BucketNotificationConfiguration, error)
 
@@ -226,6 +229,31 @@ func (s *BucketService) UpdateObjectLock(ctx context.Context, name string, setti
 		return nil, err
 	}
 	return response.Data.(*models.BucketS3ObjectLockSettings), nil
+}
+
+// GetConsistency retrieves the consistency value for a bucket from
+// GET /org/containers/{name}/consistency.
+func (s *BucketService) GetConsistency(ctx context.Context, name string) (*models.BucketConsistencySetting, error) {
+	response := models.Response{}
+	response.Data = &models.BucketConsistencySetting{}
+	if err := s.client.DoParsed(ctx, "GET", bucketSubresource(name, "consistency"), nil, &response); err != nil {
+		return nil, err
+	}
+	return response.Data.(*models.BucketConsistencySetting), nil
+}
+
+// UpdateConsistency sets the consistency value for a bucket. StorageGRID applies the change
+// only to objects ingested after it; objects already in the bucket keep their prior behavior.
+//
+// The reducedConsistency query flag the endpoint also accepts is deliberately not exposed:
+// NetApp documents it as for use only when directed by technical support.
+func (s *BucketService) UpdateConsistency(ctx context.Context, name string, settings *models.BucketConsistencySetting) (*models.BucketConsistencySetting, error) {
+	response := models.Response{}
+	response.Data = &models.BucketConsistencySetting{}
+	if err := s.client.DoParsed(ctx, "PUT", bucketSubresource(name, "consistency"), settings, &response); err != nil {
+		return nil, err
+	}
+	return response.Data.(*models.BucketConsistencySetting), nil
 }
 
 // GetNotification retrieves the notification configuration for a bucket.

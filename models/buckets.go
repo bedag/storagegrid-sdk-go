@@ -45,6 +45,15 @@ type BucketS3ObjectLockDefaultRetentionSettings struct {
 	Years json.Number `json:"years,omitempty"`
 }
 
+// BucketConsistencySetting is the consistency value applied to operations on an S3 bucket
+// or Swift container. It controls the trade-off between the availability of the objects in
+// the bucket and the consistency of those objects across Storage Nodes and sites.
+type BucketConsistencySetting struct {
+	// The consistency value. One of: all, strong-global, strong-site, read-after-new-write,
+	// available. Required by the API on write, hence no omitempty.
+	Consistency string `json:"consistency"`
+}
+
 type BucketComplianceSettings struct {
 	// Wether the objects are autoDeleted
 	AutoDelete *bool `json:"autoDelete"`

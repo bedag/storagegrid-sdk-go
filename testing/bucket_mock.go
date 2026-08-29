@@ -22,6 +22,8 @@ type MockBucketService struct {
 	GetRegionFunc          func(ctx context.Context, name string) (string, error)
 	GetObjectLockFunc      func(ctx context.Context, name string) (*models.BucketS3ObjectLockSettings, error)
 	UpdateObjectLockFunc   func(ctx context.Context, name string, settings *models.BucketS3ObjectLockSettings) (*models.BucketS3ObjectLockSettings, error)
+	GetConsistencyFunc     func(ctx context.Context, name string) (*models.BucketConsistencySetting, error)
+	UpdateConsistencyFunc  func(ctx context.Context, name string, settings *models.BucketConsistencySetting) (*models.BucketConsistencySetting, error)
 	GetNotificationFunc    func(ctx context.Context, name string) (*models.BucketNotificationConfiguration, error)
 	UpdateNotificationFunc func(ctx context.Context, name string, config *models.BucketNotificationConfiguration) (*models.BucketNotificationConfiguration, error)
 	GetPolicyFunc          func(ctx context.Context, name string) (*models.BucketPolicyConfiguration, error)
@@ -113,6 +115,20 @@ func (m *MockBucketService) GetObjectLock(ctx context.Context, name string) (*mo
 func (m *MockBucketService) UpdateObjectLock(ctx context.Context, name string, settings *models.BucketS3ObjectLockSettings) (*models.BucketS3ObjectLockSettings, error) {
 	if m.UpdateObjectLockFunc != nil {
 		return m.UpdateObjectLockFunc(ctx, name, settings)
+	}
+	return settings, nil
+}
+
+func (m *MockBucketService) GetConsistency(ctx context.Context, name string) (*models.BucketConsistencySetting, error) {
+	if m.GetConsistencyFunc != nil {
+		return m.GetConsistencyFunc(ctx, name)
+	}
+	return &models.BucketConsistencySetting{}, nil
+}
+
+func (m *MockBucketService) UpdateConsistency(ctx context.Context, name string, settings *models.BucketConsistencySetting) (*models.BucketConsistencySetting, error) {
+	if m.UpdateConsistencyFunc != nil {
+		return m.UpdateConsistencyFunc(ctx, name, settings)
 	}
 	return settings, nil
 }
