@@ -31,7 +31,7 @@ func main() {
 	tenantPass := os.Getenv("STORAGEGRID_TENANT_PASSWORD")
 	accountID := os.Getenv("STORAGEGRID_ACCOUNT_ID")
 	skipSSL := os.Getenv("STORAGEGRID_SKIP_SSL") == "true"
-	apply := os.Getenv("STORAGEGRID_APPLY") == "true"
+	apply := os.Getenv("STORAGEGRID_APPLY") == "false"
 
 	if endpoint == "" || gridUser == "" || gridPass == "" {
 		log.Fatal("Required env vars: STORAGEGRID_ENDPOINT, STORAGEGRID_USERNAME, STORAGEGRID_PASSWORD")
@@ -113,7 +113,7 @@ func main() {
 			Enabled: &enabled,
 			DefaultRetentionSetting: &models.BucketS3ObjectLockDefaultRetentionSettings{
 				Mode: "compliance",
-				Days: 30,
+				Days: "30",
 			},
 		},
 	}
@@ -164,11 +164,11 @@ func printBucketObjectLock(s *models.BucketS3ObjectLockSettings) {
 	}
 	fmt.Println("  defaultRetentionSetting:")
 	fmt.Printf("    mode:  %s\n", s.DefaultRetentionSetting.Mode)
-	if s.DefaultRetentionSetting.Days != 0 {
-		fmt.Printf("    days:  %d\n", s.DefaultRetentionSetting.Days)
+	if s.DefaultRetentionSetting.Days != "" {
+		fmt.Printf("    days:  %s\n", s.DefaultRetentionSetting.Days)
 	}
-	if s.DefaultRetentionSetting.Years != 0 {
-		fmt.Printf("    years: %d\n", s.DefaultRetentionSetting.Years)
+	if s.DefaultRetentionSetting.Years != "" {
+		fmt.Printf("    years: %s\n", s.DefaultRetentionSetting.Years)
 	}
 }
 

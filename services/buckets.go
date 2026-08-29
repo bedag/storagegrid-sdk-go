@@ -129,10 +129,13 @@ func (s *BucketService) Delete(ctx context.Context, name string) error {
 }
 
 // Drain a bucket by name. This will delete all objects in the bucket but leave the bucket itself intact.
+//
+// deleteObjects must be sent as a JSON boolean. Sending it as a string makes the API
+// reject the request with 422 "Deleteobjects is not included in the list."
 func (s *BucketService) Drain(ctx context.Context, name string) (*models.BucketDeleteObjectStatus, error) {
 	response := models.Response{}
 	response.Data = &models.BucketDeleteObjectStatus{}
-	body := map[string]string{"deleteObjects": "true"}
+	body := map[string]bool{"deleteObjects": true}
 
 	err := s.client.DoParsed(ctx, "POST", bucketEndpoint+"/"+name+"/delete-objects", body, &response)
 	if err != nil {
@@ -144,11 +147,13 @@ func (s *BucketService) Drain(ctx context.Context, name string) (*models.BucketD
 	return deleteObjectStatus, nil
 }
 
-// Drain a bucket by name. This will delete all objects in the bucket but leave the bucket itself intact.
+// CancelDrain stops an in-progress drain for the named bucket.
+//
+// deleteObjects must be sent as a JSON boolean; see Drain.
 func (s *BucketService) CancelDrain(ctx context.Context, name string) (*models.BucketDeleteObjectStatus, error) {
 	response := models.Response{}
 	response.Data = &models.BucketDeleteObjectStatus{}
-	body := map[string]string{"deleteObjects": "false"}
+	body := map[string]bool{"deleteObjects": false}
 
 	err := s.client.DoParsed(ctx, "POST", bucketEndpoint+"/"+name+"/delete-objects", body, &response)
 	if err != nil {
