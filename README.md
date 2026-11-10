@@ -130,6 +130,7 @@ opts := []client.ClientOption{
 		// AccountId: &accountID, // Required for tenant operations only
 	}),
 	// client.WithSkipSSL(), // Skip SSL verification (development only)
+	// client.WithHTTPClient(httpClient), // Bring your own *http.Client, e.g. with an instrumented Transport (not combinable with WithSkipSSL)
 }
 ```
 

@@ -61,10 +61,17 @@ func WithEndpoint(endpoint string) ClientOption {
 	}
 }
 
-func newClient(options ...ClientOption) (*Client, error) {
-	c := &Client{
-		httpClient: http.DefaultClient,
+// WithHTTPClient sets the HTTP client used for all requests, e.g. to wrap its
+// Transport for metrics or tracing. The client is used as is and never modified,
+// so configure TLS on its Transport instead of combining it with WithSkipSSL.
+func WithHTTPClient(httpClient *http.Client) ClientOption {
+	return func(c *Client) {
+		c.httpClient = httpClient
 	}
+}
+
+func newClient(options ...ClientOption) (*Client, error) {
+	c := &Client{}
 
 	for _, option := range options {
 		option(c)
@@ -75,12 +82,17 @@ func newClient(options ...ClientOption) (*Client, error) {
 		return nil, fmt.Errorf("no endpoint set")
 	}
 
-	var transCfg = &http.Transport{
-		Proxy:           http.ProxyFromEnvironment,
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: c.skipSSL}, // #nosec G402
+	if c.httpClient != nil {
+		if c.skipSSL {
+			return nil, fmt.Errorf("WithSkipSSL cannot be combined with WithHTTPClient, configure TLS on the provided client's Transport")
+		}
+		return c, nil
 	}
 
-	c.httpClient.Transport = transCfg
+	// Each client gets its own transport; never touch the shared http.DefaultClient.
+	transport := http.DefaultTransport.(*http.Transport).Clone()
+	transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: c.skipSSL} // #nosec G402
+	c.httpClient = &http.Client{Transport: transport}
 
 	return c, nil
 }
@@ -126,7 +138,7 @@ func (c *Client) newRequest(ctx context.Context, method string, path string, bod
 
 	// Create a new request
 	surl := c.baseURL.String() + path
-	req, err := http.NewRequest(method, surl, bytes.NewReader(reqBody))
+	req, err := http.NewRequestWithContext(ctx, method, surl, bytes.NewReader(reqBody))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
