@@ -2,10 +2,16 @@ package client
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
+	"sync"
 	"sync/atomic"
 	"testing"
+	"time"
+
+	"github.com/bedag/storagegrid-sdk-go/models"
 )
 
 type countingTransport struct {
@@ -99,4 +105,41 @@ func TestRequestHonorsContext(t *testing.T) {
 	if hits.Load() != 0 {
 		t.Error("request must not reach the server after the context was canceled")
 	}
+}
+
+func TestConcurrentRequestsReadTokenSafely(t *testing.T) {
+	var logins atomic.Int32
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(r.URL.Path, "/authorize") {
+			n := logins.Add(1)
+			// An already expired token makes every request log in again, so token writes and reads overlap.
+			w.Header().Set("Expires", time.Now().Add(-time.Minute).UTC().Format("Mon, 02 Jan 2006 15:04:05 GMT"))
+			fmt.Fprintf(w, `{"data":"token-%d"}`, n)
+			return
+		}
+		if !strings.HasPrefix(r.Header.Get("Authorization"), "Bearer token-") {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer srv.Close()
+
+	c, err := newClient(WithEndpoint(srv.URL), WithCredentials(&models.Credentials{}))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var wg sync.WaitGroup
+	for range 16 {
+		wg.Go(func() {
+			resp, err := c.DoUnparsed(context.Background(), http.MethodGet, "/grid/accounts", nil)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			resp.Body.Close()
+		})
+	}
+	wg.Wait()
 }
