@@ -21,3 +21,12 @@ type BucketStats struct {
 	VersioningSuspended *bool   `json:"versioningSuspended,omitempty"` // Indicates if versioning is suspended.
 	Region              *string `json:"region,omitempty"`              // The region where the bucket is located (e.g., "us-east-1").
 }
+
+// TenantUsageEntry is one tenant's usage as returned by the accounts cache listing.
+type TenantUsageEntry struct {
+	Id          string        `json:"id"`
+	Name        string        `json:"name"`
+	ObjectCount *int64        `json:"objectCount,omitempty"`
+	DataBytes   *int64        `json:"dataBytes,omitempty"`
+	Policy      *TenantPolicy `json:"policy,omitempty"`
+}

@@ -7,7 +7,8 @@ import (
 )
 
 const (
-	tenantEndpoint string = "/grid/accounts"
+	tenantEndpoint        string = "/grid/accounts"
+	accountsCacheEndpoint string = "/grid/accounts-cache"
 )
 
 // TenantServiceInterface defines the contract for tenant service operations
@@ -18,6 +19,8 @@ type TenantServiceInterface interface {
 	Update(ctx context.Context, tenant *models.Tenant) (*models.Tenant, error)
 	Delete(ctx context.Context, id string) error
 	GetUsage(ctx context.Context, id string) (*models.TenantUsage, error)
+	ListUsage(ctx context.Context) (*[]models.TenantUsageEntry, error)
+	GetUsageWithBuckets(ctx context.Context, id string) (*models.TenantUsage, error)
 }
 
 type TenantService struct {
@@ -100,4 +103,30 @@ func (s *TenantService) GetUsage(ctx context.Context, id string) (*models.Tenant
 
 	usage := response.Data.(*models.TenantUsage)
 	return usage, nil
+}
+
+// ListUsage returns cached per-tenant usage for all tenants in one call.
+func (s *TenantService) ListUsage(ctx context.Context) (*[]models.TenantUsageEntry, error) {
+	response := models.Response{}
+	response.Data = &[]models.TenantUsageEntry{}
+
+	err := s.client.DoParsed(ctx, "GET", accountsCacheEndpoint, nil, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	return response.Data.(*[]models.TenantUsageEntry), nil
+}
+
+// GetUsageWithBuckets returns tenant usage including per-bucket statistics.
+func (s *TenantService) GetUsageWithBuckets(ctx context.Context, id string) (*models.TenantUsage, error) {
+	response := models.Response{}
+	response.Data = &models.TenantUsage{}
+
+	err := s.client.DoParsed(ctx, "GET", tenantEndpoint+"/"+id+"/usage?includeBucketDetail=true", nil, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	return response.Data.(*models.TenantUsage), nil
 }

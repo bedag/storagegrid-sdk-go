@@ -130,6 +130,7 @@ opts := []client.ClientOption{
 		// AccountId: &accountID, // Required for tenant operations only
 	}),
 	// client.WithSkipSSL(), // Skip SSL verification (development only)
+	// client.WithHTTPClient(httpClient), // Bring your own *http.Client, e.g. with an instrumented Transport (not combinable with WithSkipSSL)
 }
 ```
 
@@ -182,6 +183,17 @@ if err != nil {
 }
 
 fmt.Printf("Created tenant: %s (ID: %s)\n", *createdTenant.Name, createdTenant.Id)
+```
+
+```go
+// Usage of all tenants in one call (GET /grid/accounts-cache)
+usages, err := gridClient.Tenant().ListUsage(ctx)
+
+// Usage of one tenant including per-bucket statistics
+usage, err := gridClient.Tenant().GetUsageWithBuckets(ctx, tenantID)
+
+// Prometheus instant query against the grid (GET /grid/metric-query)
+res, err := gridClient.Metrics().Query(ctx, "min by (endpoint_id) (storagegrid_load_balancer_endpoint_bound)")
 ```
 
 #### Monitoring Grid Health

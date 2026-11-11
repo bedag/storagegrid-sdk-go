@@ -61,10 +61,17 @@ func WithEndpoint(endpoint string) ClientOption {
 	}
 }
 
-func newClient(options ...ClientOption) (*Client, error) {
-	c := &Client{
-		httpClient: http.DefaultClient,
+// WithHTTPClient sets the HTTP client used for all requests, e.g. to wrap its
+// Transport for metrics or tracing. The client is used as is and never modified,
+// so configure TLS on its Transport instead of combining it with WithSkipSSL.
+func WithHTTPClient(httpClient *http.Client) ClientOption {
+	return func(c *Client) {
+		c.httpClient = httpClient
 	}
+}
+
+func newClient(options ...ClientOption) (*Client, error) {
+	c := &Client{}
 
 	for _, option := range options {
 		option(c)
@@ -75,43 +82,49 @@ func newClient(options ...ClientOption) (*Client, error) {
 		return nil, fmt.Errorf("no endpoint set")
 	}
 
-	var transCfg = &http.Transport{
-		Proxy:           http.ProxyFromEnvironment,
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: c.skipSSL}, // #nosec G402
+	if c.httpClient != nil {
+		if c.skipSSL {
+			return nil, fmt.Errorf("WithSkipSSL cannot be combined with WithHTTPClient, configure TLS on the provided client's Transport")
+		}
+		return c, nil
 	}
 
-	c.httpClient.Transport = transCfg
+	// Each client gets its own transport; never touch the shared http.DefaultClient.
+	transport := http.DefaultTransport.(*http.Transport).Clone()
+	transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: c.skipSSL} // #nosec G402
+	c.httpClient = &http.Client{Transport: transport}
 
 	return c, nil
 }
 
-func (c *Client) authorize(ctx context.Context) error {
+// authorize returns a valid token, logging in first when there is none or it expired.
+// Token fields are only touched under c.mu, as clients are shared across goroutines.
+func (c *Client) authorize(ctx context.Context) (string, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
 	if c.token != "" && time.Now().Before(c.tokenExpires) {
-		return nil
+		return c.token, nil
 	}
 
 	resp, err := c.DoUnparsed(ctx, "POST", "/authorize", c.credentials)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	token := &models.AuthorizationToken{}
 	err = c.parseResponse(resp, token)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	c.token = token.Data
-	timeFormat := "Mon, 02 Jan 2006 15:04:05 GMT"
-	c.tokenExpires, err = time.Parse(timeFormat, resp.Header.Get("Expires"))
+	expires, err := time.Parse("Mon, 02 Jan 2006 15:04:05 GMT", resp.Header.Get("Expires"))
 	if err != nil {
-		return fmt.Errorf("failed to parse token expiration: %w", err)
+		return "", fmt.Errorf("failed to parse token expiration: %w", err)
 	}
+	c.token, c.tokenExpires = token.Data, expires
 
-	return nil
+	return c.token, nil
 }
 
 func (c *Client) newRequest(ctx context.Context, method string, path string, body interface{}) (*http.Response, error) {
@@ -126,7 +139,7 @@ func (c *Client) newRequest(ctx context.Context, method string, path string, bod
 
 	// Create a new request
 	surl := c.baseURL.String() + path
-	req, err := http.NewRequest(method, surl, bytes.NewReader(reqBody))
+	req, err := http.NewRequestWithContext(ctx, method, surl, bytes.NewReader(reqBody))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
@@ -138,14 +151,11 @@ func (c *Client) newRequest(ctx context.Context, method string, path string, bod
 
 	// if the path is not an authorize endpoint, set the token in the header
 	if !slices.Contains(implementedAuthorizeEndpoints, path) {
-		// If there's no token yet or it's expired, authorize
-		if c.token == "" || time.Now().After(c.tokenExpires) {
-			err = c.authorize(ctx)
-			if err != nil {
-				return nil, err
-			}
+		token, err := c.authorize(ctx)
+		if err != nil {
+			return nil, err
 		}
-		req.Header.Set("Authorization", "Bearer "+c.token)
+		req.Header.Set("Authorization", "Bearer "+token)
 	}
 
 	resp, err := c.httpClient.Do(req)
