@@ -15,6 +15,9 @@ type MockTenantService struct {
 	UpdateFunc   func(ctx context.Context, tenant *models.Tenant) (*models.Tenant, error)
 	DeleteFunc   func(ctx context.Context, id string) error
 	GetUsageFunc func(ctx context.Context, id string) (*models.TenantUsage, error)
+
+	ListUsageFunc           func(ctx context.Context) (*[]models.TenantUsageEntry, error)
+	GetUsageWithBucketsFunc func(ctx context.Context, id string) (*models.TenantUsage, error)
 }
 
 func (m *MockTenantService) List(ctx context.Context) (*[]models.Tenant, error) {
@@ -62,3 +65,17 @@ func (m *MockTenantService) GetUsage(ctx context.Context, id string) (*models.Te
 
 // Compile-time interface compliance check
 var _ services.TenantServiceInterface = (*MockTenantService)(nil)
+
+func (m *MockTenantService) ListUsage(ctx context.Context) (*[]models.TenantUsageEntry, error) {
+	if m.ListUsageFunc != nil {
+		return m.ListUsageFunc(ctx)
+	}
+	return &[]models.TenantUsageEntry{}, nil
+}
+
+func (m *MockTenantService) GetUsageWithBuckets(ctx context.Context, id string) (*models.TenantUsage, error) {
+	if m.GetUsageWithBucketsFunc != nil {
+		return m.GetUsageWithBucketsFunc(ctx, id)
+	}
+	return &models.TenantUsage{}, nil
+}

@@ -20,6 +20,7 @@ type GridClient struct {
 	haGroup      services.HAGroupServiceInterface
 	gateway      services.GatewayConfigServiceInterface
 	s3ObjectLock services.S3ObjectLockServiceInterface
+	metrics      services.MetricsServiceInterface
 }
 
 func NewGridClient(options ...ClientOption) (*GridClient, error) {
@@ -38,6 +39,7 @@ func NewGridClient(options ...ClientOption) (*GridClient, error) {
 		haGroup:      services.NewHAGroupService(c),
 		gateway:      services.NewGatewayConfigService(c),
 		s3ObjectLock: services.NewS3ObjectLockService(c),
+		metrics:      services.NewMetricsService(c),
 	}, nil
 }
 
@@ -65,4 +67,8 @@ func (gc *GridClient) Gateway() services.GatewayConfigServiceInterface {
 
 func (gc *GridClient) S3ObjectLock() services.S3ObjectLockServiceInterface {
 	return gc.s3ObjectLock
+}
+
+func (gc *GridClient) Metrics() services.MetricsServiceInterface {
+	return gc.metrics
 }
